@@ -8,6 +8,7 @@ use App\Repository\MessageRepository;
 use Controller\MessageControllerTest;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -23,28 +24,31 @@ class MessageController extends AbstractController
     /**
      * TODO: cover this method with tests, and refactor the code (including other files that need to be refactored)
      */
-    #[Route('/messages')]
-    public function list(Request $request, MessageRepository $messages): Response
+    //It's better always to include methods which should be used
+    #[Route('/messages',methods: ['GET'])]
+    public function list(Request $request, MessageRepository $messages): JsonResponse
     {
-        $messages = $messages->by($request);
-  
-        foreach ($messages as $key=>$message) {
-            $messages[$key] = [
+        $status = (string)$request->query->get('status');
+
+        $messageEntities = $messages->findByStatus($status);
+
+        $messageData = [];
+        foreach ($messageEntities as $message) {
+            $messageData[] = [
                 'uuid' => $message->getUuid(),
                 'text' => $message->getText(),
-                'status' => $message->getStatus(),
+                'status' => $message->getStatus()->value,
             ];
         }
-        
-        return new Response(json_encode([
-            'messages' => $messages,
-        ], JSON_THROW_ON_ERROR), headers: ['Content-Type' => 'application/json']);
+//Json Response sets headers automatically as needed, is more readable and type safe
+        return new JsonResponse(['messages' => $messageData]);
+
     }
 
-    #[Route('/messages/send', methods: ['GET'])]
+    #[Route('/messages/send', methods: ['POST'])]
     public function send(Request $request, MessageBusInterface $bus): Response
     {
-        $text = $request->query->get('text');
+        $text = (string)$request->query->get('text');
         
         if (!$text) {
             return new Response('Text is required', 400);

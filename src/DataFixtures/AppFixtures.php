@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Message;
+use App\Entity\MessageStatusEnum;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
@@ -14,14 +15,11 @@ class AppFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         $faker = Factory::create();
+        $statusValues = MessageStatusEnum::cases();
         
         foreach (range(1, 10) as $i) {
-            $message = new Message();
-            $message->setUuid(Uuid::v6()->toRfc4122());
-            $message->setText($faker->sentence);
-            $message->setStatus(random(['sent', 'read']));
-            $message->setCreatedAt(new \DateTime());
-            
+            $randomStatus = $statusValues[array_rand($statusValues)];
+            $message = new Message($faker->sentence,$randomStatus);
             $manager->persist($message);
         }
 

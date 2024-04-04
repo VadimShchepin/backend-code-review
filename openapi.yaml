@@ -19,44 +19,55 @@ paths:
               - "read"
       responses:
         '200':
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: "object"
-                properties:
-                  messages:
-                    type: "array"
-                    items:
-                      type: "object"
-                      properties:
-                        uuid: 
-                          type: "string"
-                        text:
-                          type: "string"
-                        status:
-                          type: "string"
-                          enum:
-                            - "sent"
-                            - "read"
-              example:
-                messages:
-                  - text: "Hello, World!"
-                    status: "read"
-                  - text: "How are you today?"
-                    status: "sent"
-                  - text: "Thanks, I'm fine. How about you?"
-                    status: "sent"
+          $ref: '#/components/responses/Response'
   /messages/send:
-    get:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                text:
+                  type: "string"
+                  description: "The text you want to send"
+                  required: true
       summary: Send a Message
-      parameters:
-        - name: text
-          in: query
-          description: The text you want to send
-          required: true
-          schema:
-            type: "string"
       responses:
         '204':
           description: Successfully sent
+components:
+  responses:
+    Response:
+      description: Successful response
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              messages:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    uuid:
+                      type: "string"
+                    text:
+                      type: "string"
+                    status:
+                      type: "string"
+                      enum:
+                        - "sent"
+                        - "read"
+          example:
+            messages:
+              - uuid: "123e4567-e89b-12d3-a456-426614174000"
+                text: "Hello, World!"
+                status: "read"
+              - uuid: "123e4567-e23b-12d3-a456-426614174000"
+                text: "How are you today?"
+                status: "sent"
+              - uuid: "123e4567-e89b-12d3-a456-426614174120"
+                text: "Thanks, I'm fine. How about you?"
+                status: "failed"

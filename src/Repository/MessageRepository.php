@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Message;
+use App\Entity\MessageStatusEnum;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,21 +22,25 @@ class MessageRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Message::class);
     }
-    
-    public function by(Request $request): array
+
+    /**
+     * Finds messages by status.
+     *
+     * @param string|null $status The status to filter messages by.
+     * @return Message[] Returns an array of Message objects filtered by status.
+     */
+    public function findByStatus(?string $status): array
     {
-        $status = $request->query->get('status');
-        
-        if ($status) {
-            $messages = $this->getEntityManager()
-                ->createQuery(
-                    sprintf("SELECT m FROM App\Entity\Message m WHERE m.status = '%s'", $status)
-                )
-                ->getResult();
-        } else {
-            $messages = $this->findAll();
+        $qb = $this->createQueryBuilder('m');
+
+        if ($status && MessageStatusEnum::tryFrom($status)) {
+            $qb->andWhere('m.status = :status')
+                ->setParameter('status', MessageStatusEnum::tryFrom($status));
         }
-        
-        return $messages;
+
+        /** @var \App\Entity\Message[] $result */
+        $result = $qb->getQuery()->getResult();
+
+        return $result;
     }
 }
