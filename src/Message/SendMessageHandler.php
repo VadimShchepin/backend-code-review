@@ -11,9 +11,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-/**
- * TODO: Cover with a test
- */
 readonly class SendMessageHandler
 {
     public function __construct(
@@ -26,7 +23,6 @@ readonly class SendMessageHandler
     {
         $message = new Message(
             $sendMessage->text,
-            MessageStatusEnum::SENT
         );
 
         $this->manager->persist($message);

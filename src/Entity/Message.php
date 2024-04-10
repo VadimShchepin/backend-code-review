@@ -4,26 +4,26 @@ namespace App\Entity;
 
 use App\Entity\MessageStatusEnum;
 use App\Repository\MessageRepository;
-use DateTime;
 use DateTimeImmutable;
-use Doctrine\DBAL\Types\DateTimeImmutableType;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
-/**
- * TODO: Review Message class
- */
 
 class Message
 {
+    //Constructor can be used to generate values to move the irrelevant logic from Handler
     public function __construct(string $text, ?MessageStatusEnum $status = null)
     {
-        $this->uuid = Uuid::v6()->toRfc4122();
+        $this->uuid = Uuid::v7()->toRfc4122();
+        /*UUIDv7 can be used -> https://symfony.com/doc/current/components/uid.html
+        provides better entropy and a more strict chronological order of UUID generation*/
+
         $this->text = $text;
         $this->createdAt = new DateTimeImmutable();
-        $this->status = $status ?? MessageStatusEnum::PENDING; // Default to PENDING if no status provided
+        $this->status = $status ?? MessageStatusEnum::SENT;
+        // Default to SENT if no status provided
     }
 
     #[ORM\Id]
@@ -31,7 +31,7 @@ class Message
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::GUID)]
+    #[ORM\Column(type: Types::GUID,)]
     private ?string $uuid;
 
     #[ORM\Column(length: 255)]
@@ -52,13 +52,13 @@ class Message
     {
         return $this->uuid;
     }
-
-    public function setUuid(string $uuid): self
-    {
-        $this->uuid = $uuid;
-
-        return $this;
-    }
+    // Set UUID shouldn't be possible if set in construtor
+//    public function setUuid(string $uuid): self
+//    {
+//        $this->uuid = $uuid;
+//
+//        return $this;
+//    }
 
     public function getText(): ?string
     {
@@ -89,11 +89,11 @@ class Message
     {
         return $this->createdAt;
     }
-
-    public function setCreatedAt(DateTimeImmutable $createdAt): self
-    {
-        $this->createdAt = $createdAt;
-        
-        return $this;
-    }
+    // Shouldn't be set after initialisation
+//    public function setCreatedAt(DateTimeImmutable $createdAt): self
+//    {
+//        $this->createdAt = $createdAt;
+//
+//        return $this;
+//    }
 }

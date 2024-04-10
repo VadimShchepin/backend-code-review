@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Messages API
-  version: 1.0.0
+  version: 1.0.1
 paths:
   /messages:
     get:
@@ -13,61 +13,103 @@ paths:
           description: Filter messages by status
           required: false
           schema:
-            type: "string"
+            type: string
             enum:
-              - "sent"
-              - "read"
+              - sent
+              - read
+              - failed
       responses:
         '200':
-          $ref: '#/components/responses/Response'
+          description: A list of messages, possibly empty.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessagesResponse'
+        '400':
+          description: Bad Request. Invalid status value.
   /messages/send:
     post:
+      summary: Send a Message
+      description: Sends a new message.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: "object"
-              properties:
-                text:
-                  type: "string"
-                  description: "The text you want to send"
-                  required: true
-      summary: Send a Message
+              $ref: '#/components/schemas/SendMessageRequest'
       responses:
-        '204':
-          description: Successfully sent
+        '200':
+          description: Message was successfully sent.
+        '400':
+          description: Invalid JSON data.
+        '415':
+          description: Unsupported Media Type. Only application/json is supported.
+        '422':
+          description: Text is required and must be of type string.
 components:
+  schemas:
+    SendMessageRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          description: The text of the message to send.
+      required:
+        - text
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+    MessagesResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+    Message:
+      type: object
+      properties:
+        uuid:
+          type: string
+          nullable: true
+        text:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - sent
+            - read
+            - failed
   responses:
-    Response:
-      description: Successful response
+    BadRequest:
+      description: The request was invalid or cannot be served.
       content:
         application/json:
           schema:
-            type: "object"
-            properties:
-              messages:
-                type: "array"
-                items:
-                  type: "object"
-                  properties:
-                    uuid:
-                      type: "string"
-                    text:
-                      type: "string"
-                    status:
-                      type: "string"
-                      enum:
-                        - "sent"
-                        - "read"
+            $ref: '#/components/schemas/Error'
+    UnsupportedMediaType:
+      description: The request entity has a media type which the server or resource does not support.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnprocessableEntity:
+      description: The server understands the content type of the request entity, and the syntax of the request entity is correct, but it was unable to process the contained instructions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
           example:
             messages:
               - uuid: "123e4567-e89b-12d3-a456-426614174000"
-                text: "Hello, World!"
+                text: "Message with status Read"
                 status: "read"
               - uuid: "123e4567-e23b-12d3-a456-426614174000"
-                text: "How are you today?"
+                text: "Message with status Sent"
                 status: "sent"
               - uuid: "123e4567-e89b-12d3-a456-426614174120"
-                text: "Thanks, I'm fine. How about you?"
+                text: null
                 status: "failed"
