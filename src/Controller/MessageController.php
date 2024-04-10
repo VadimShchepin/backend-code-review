@@ -44,7 +44,6 @@ class MessageController extends AbstractController
         $content = json_decode($request->getContent(),true);
 
         if (!is_array($content)) {
-            // Handle the error appropriately, perhaps by returning a 400 Bad Request response
             return new Response('Invalid JSON data', 400);
         }
         $messageText = $this->checkAndRetrieveData($content);
@@ -67,7 +66,7 @@ class MessageController extends AbstractController
     {
         /**
          * @phpstan-ignore-next-line
-         * Negated boolean expression is always false. can't understand why, but this validation is important
+         * Negated "boolean expression is always false". can't understand why, but this validation is important
          */
         if (empty($data['text']) || !is_string($data['text'])) {
             return null;
@@ -85,9 +84,9 @@ class MessageController extends AbstractController
         $messageData = [];
         foreach ($messageEntities as $message) {
             $messageData[] = [
-                'uuid' => $message->getUuid(), // Assuming getUuid() can return null
-                'text' => $message->getText(), // Assuming getText() can return null
-                'status' => $message->getStatus()->value, // This is fine as is
+                'uuid' => $message->getUuid(),
+                'text' => $message->getText(),
+                'status' => $message->getStatus()->value,
             ];
         }
         return $messageData;

@@ -52,7 +52,7 @@ class Message
     {
         return $this->uuid;
     }
-    // Set UUID shouldn't be possible if set in construtor
+    // Set UUID shouldn't be possible if set in constructor
 //    public function setUuid(string $uuid): self
 //    {
 //        $this->uuid = $uuid;
@@ -89,7 +89,7 @@ class Message
     {
         return $this->createdAt;
     }
-    // Shouldn't be set after initialisation
+    // Shouldn't be set after initialisation in constructor
 //    public function setCreatedAt(DateTimeImmutable $createdAt): self
 //    {
 //        $this->createdAt = $createdAt;
